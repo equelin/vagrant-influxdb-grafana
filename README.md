@@ -47,7 +47,7 @@ Bringing machine 'default' up with 'virtualbox' provider...
 
 4. Check that everything goes well by connecting to the Grafana web interface at the url `http://localhost:3000` and providing the user `admin` with the password `admin`
 
-![screenshot-2017-10-19 grafana](https://user-images.githubusercontent.com/9823778/31761458-3b07acec-b4b8-11e7-995c-077926b51432.png)
+![screenshot grafana 5](https://user-images.githubusercontent.com/9823778/45226152-73bb8680-b2be-11e8-89ad-cea96bcddb8d.png)
 
 # Author
 
@@ -57,7 +57,7 @@ Bringing machine 'default' up with 'virtualbox' provider...
 
 # License
 
-Copyright 2017 Erwan Quelin and the community.
+Copyright 2017-2018 Erwan Quelin and the community.
 
 Licensed under Apache License Version 2.0.
 
