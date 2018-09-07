@@ -49,27 +49,35 @@ timeout 10 bash -c "until </dev/tcp/localhost/8086; do sleep 1; done"
 curl -i -XPOST http://localhost:8086/query --data-urlencode "q=CREATE DATABASE #{$database_name}"
 SCRIPT
 
+$reset_grafana_admin_password = <<SCRIPT
+echo "...Reset Grafana admin password..."
+
+timeout 10 bash -c "until </dev/tcp/localhost/3000; do sleep 1; done"
+
+curl -uadmin:admin -X PUT -H "Content-Type: application/json" -d '{
+  "oldPassword": "admin",
+  "newPassword": "admin",
+  "confirmNew": "admin"
+}' http://localhost:3000/api/user/password
+SCRIPT
+
 $create_grafana_data_source = <<SCRIPT
 echo "...Create Grafana data source..."
 
 timeout 10 bash -c "until </dev/tcp/localhost/3000; do sleep 1; done"
 
-curl -s -H "Content-Type: application/json" \
-    -XPOST http://admin:admin@localhost:3000/api/datasources \
-    -d @- <<EOF
-    {
-        "name":"#{$datasource_name}",
-        "type":"influxdb",
-        "url":"http://localhost:8086",
-        "access":"proxy",
-        "basicAuth":false,
-        "database":"#{$database_name}",
-        "isDefault":true,
-        "jsonData": {
-            "timeInterval":"#{$time_interval}"
-        }
-    }
-EOF
+curl -uadmin:admin -X POST -H "Content-Type: application/json" -d '{
+  "name":"#{$datasource_name}",
+  "type":"influxdb",
+  "url":"http://localhost:8086",
+  "access":"proxy",
+  "basicAuth":false,
+  "database":"#{$database_name}",
+  "isDefault":true,
+  "jsonData": {
+  "timeInterval":"#{$time_interval}"
+  }
+}' http://localhost:3000/api/datasources
 SCRIPT
 
 Vagrant.configure("2") do |config|
@@ -87,6 +95,7 @@ Vagrant.configure("2") do |config|
         #{$install_influxdb}
         #{$install_grafana}
         #{$create_influx_database}
+        #{$reset_grafana_admin_password}
         #{$create_grafana_data_source}
     SHELL
 end    
