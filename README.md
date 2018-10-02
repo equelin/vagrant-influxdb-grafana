@@ -1,8 +1,8 @@
 # vagrant-influxdb-grafana
 
-This Vagrantfile purpose is to quickly setup an Ubuntu box with InfluxDB and Grafana installed. It gives the opportunity to easily prototype ideas.
+This Vagrantfile purpose is to quickly setup an Ubuntu box with InfluxDB, Grafana, Telegraf and Chronograf installed. It gives the opportunity to easily prototype ideas.
 
-The provisonning steps include creating an InfluxDB database and the related Grafana's data source.
+The provisonning steps include creating an InfluxDB database and the related Grafana's data source. Telegraf is configured to collect basics CPU and memory statistics.
 
 ### Prerequisites
 
@@ -48,6 +48,8 @@ Bringing machine 'default' up with 'virtualbox' provider...
 4. Check that everything goes well by connecting to the Grafana web interface at the url `http://localhost:3000` and providing the user `admin` with the password `admin`
 
 ![screenshot-2017-10-19 grafana](https://user-images.githubusercontent.com/9823778/31761458-3b07acec-b4b8-11e7-995c-077926b51432.png)
+
+5. Chronograf is available at the url `http://localhost:8888` 
 
 # Author
 
