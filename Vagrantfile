@@ -10,6 +10,9 @@ $database_name = "mydb"
 $time_interval = "30s"
 $datasource_name = "InfluxDB-mydb"
 
+##Version
+$chronograf_version = "chronograf_1.6.2_amd64.deb"
+
 
 ## Scripts
 $build_prereq = <<SCRIPT
@@ -25,6 +28,32 @@ echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stabl
 sudo apt-get update && sudo apt-get install -y influxdb
 sudo systemctl enable influxdb.service
 sudo systemctl start influxdb
+SCRIPT
+
+$install_telegraf = <<SCRIPT
+echo "...Installing Telegraf..."
+sudo apt-get install -y telegraf
+
+sudo rm /etc/telegraf/telegraf.conf
+
+cat > /etc/telegraf/telegraf.conf << EOF
+[agent]
+  interval = "#{$time_interval}"
+
+# OUTPUTS
+[[outputs.influxdb]]
+  url = "http://localhost:8086" # required.
+  database = "#{$database_name}" # required.
+
+# INPUTS
+[[inputs.mem]]
+
+[[inputs.cpu]]
+  percpu = true
+  totalcpu = true
+EOF
+
+sudo systemctl restart telegraf.service
 SCRIPT
 
 $install_grafana = <<SCRIPT
@@ -80,6 +109,13 @@ curl -uadmin:admin -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:3000/api/datasources
 SCRIPT
 
+$install_chronograf = <<SCRIPT
+echo "...Installing Chronograf..."
+wget https://dl.influxdata.com/chronograf/releases/#{$chronograf_version}
+sudo dpkg -i #{$chronograf_version}
+rm #{$chronograf_version}
+SCRIPT
+
 Vagrant.configure("2") do |config|
 
     config.vm.box = $box_image
@@ -89,13 +125,16 @@ Vagrant.configure("2") do |config|
     config.vm.network "forwarded_port", :guest => 8090, :host => 8090
     config.vm.network "forwarded_port", :guest => 8099, :host => 8099
     config.vm.network "forwarded_port", :guest => 3000, :host => 3000
+    config.vm.network "forwarded_port", :guest => 8888, :host => 8888
     
     config.vm.provision "shell", inline: <<-SHELL
         #{$build_prereq}
         #{$install_influxdb}
-        #{$install_grafana}
         #{$create_influx_database}
+        #{$install_telegraf}
+        #{$install_grafana}
         #{$reset_grafana_admin_password}
         #{$create_grafana_data_source}
+        #{$install_chronograf}
     SHELL
 end    
